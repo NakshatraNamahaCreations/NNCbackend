@@ -45,7 +45,114 @@ const getAllEnquiries = asyncHandler(async (req, res) => {
   res.status(200).json(enquiries);
 });
 
+
+const countEnquiriesByCity = asyncHandler(async (req, res) => {
+  const cities = ["Bangalore", "Mysore"];
+  
+  const enquiryCounts = await Enquiry.aggregate([
+    {
+      $match: { city: { $in: cities } } // Filter for Bangalore and Mysore
+    },
+    {
+      $group: {
+        _id: "$city", // Group by city
+        count: { $sum: 1 } // Count inquiries per city
+      }
+    }
+  ]);
+
+  // Format the response to include counts for both cities (even if zero)
+  const result = {
+    Bangalore: 0,
+    Mysore: 0
+  };
+
+  enquiryCounts.forEach(item => {
+    result[item._id] = item.count;
+  });
+
+  res.status(200).json(result);
+});
+
+
+const getMonthlyEnquiryCount = asyncHandler(async (req, res) => {
+  const monthlyCounts = await Enquiry.aggregate([
+    {
+      $match: { city: "Mysore" } // Filter for Mysore
+    },
+    {
+      $group: {
+        _id: {
+          year: { $year: "$createdAt" },
+          month: { $month: "$createdAt" }
+        },
+        count: { $sum: 1 }
+      }
+    },
+    {
+      $sort: { "_id.year": 1, "_id.month": 1 } // Sort by year and month
+    },
+    {
+      $project: {
+        month: {
+          $concat: [
+            { $toString: "$_id.year" },
+            "-",
+            { $cond: [{ $lt: ["$_id.month", 10] }, "0", ""] },
+            { $toString: "$_id.month" }
+          ]
+        },
+        count: 1,
+        _id: 0
+      }
+    }
+  ]);
+
+  res.status(200).json(monthlyCounts);
+});
+
+
+const getMonthlyBangaloreEnquiryCount = asyncHandler(async (req, res) => {
+  const monthlyCounts = await Enquiry.aggregate([
+    {
+      $match: { city: "Bangalore" } // Filter for Bangalore
+    },
+    {
+      $group: {
+        _id: {
+          year: { $year: "$createdAt" },
+          month: { $month: "$createdAt" }
+        },
+        count: { $sum: 1 }
+      }
+    },
+    {
+      $sort: { "_id.year": 1, "_id.month": 1 } // Sort by year and month
+    },
+    {
+      $project: {
+        month: {
+          $concat: [
+            { $toString: "$_id.year" },
+            "-",
+            { $cond: [{ $lt: ["$_id.month", 10] }, "0", ""] },
+            { $toString: "$_id.month" }
+          ]
+        },
+        count: 1,
+        _id: 0
+      }
+    }
+  ]);
+
+  res.status(200).json(monthlyCounts);
+});
+
+
 module.exports = {
   createEnquiry,
   getAllEnquiries,
+  countEnquiriesByCity,
+  getMonthlyEnquiryCount,
+  getMonthlyBangaloreEnquiryCount,
 };
