@@ -5,6 +5,8 @@ const path = require("path");
 const mongoose = require("mongoose");
 const userRoutes = require("./routes/userRoutes");
 const enquiryRoutes = require("./routes/enquiryRoutes");
+const blogRoutes = require('./routes/blogRoutes');
+const personRoutes = require('./routes/personRoutes');
 
 dotenv.config();
 const app = express();
@@ -31,6 +33,8 @@ app.use(express.urlencoded({ limit: "30mb", extended: true }));
 // Routes
 app.use("/api/users", userRoutes);
 app.use("/api/enquiries", enquiryRoutes);
+app.use('/blogs', blogRoutes);
+app.use('/api/persons', personRoutes);
 
 const connectDB = async () => {
   try {
