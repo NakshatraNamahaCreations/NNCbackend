@@ -10,7 +10,8 @@ exports.createBlog = async (req, res) => {
 
     const newBlog = new Blog({
       title,
-      bannerImage: `${req.protocol}://${req.get('host')}/uploads/${req.files.bannerImage[0].filename}`, // Store full URL
+      // bannerImage: `${req.protocol}://${req.get('host')}/uploads/${req.files.bannerImage[0].filename}`, // Store full URL
+      bannerImage: req.files.bannerImage[0].filename,
       metaTitle,
       metaDescription,
       description,
@@ -92,7 +93,7 @@ exports.updateBlog = async (req, res) => {
     };
 
     if (req.files && req.files.bannerImage) {
-      updateData.bannerImage = req.files.bannerImage[0].path;
+      updateData.bannerImage = req.files.bannerImage[0].filename;
     }
 
     const blog = await Blog.findByIdAndUpdate(id, updateData, {
