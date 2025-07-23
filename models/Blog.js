@@ -6,7 +6,12 @@ const blogSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
-  
+  slug: {
+    type: String,
+    required: true,
+    unique: true, // ensures no duplicate slugs
+    trim: true,
+  },
   bannerImage: {
     type: String,
     required: true,

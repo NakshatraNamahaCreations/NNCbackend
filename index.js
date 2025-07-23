@@ -67,7 +67,7 @@ mongoose.connection.on("disconnected", () => {
 
 const uploadDir = path.join(__dirname, "uploads");
 
-app.use("/uploads", express.static(path.join(__dirname, "Uploads")));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use((req, res, next) => {
   res.status(404).json({ error: "Route not found" });

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { createBlog, getBlogs, getBlog, updateBlog, deleteBlog } = require('../Controllers/blogController');
+const { createBlog, getBlogs, getBlog, updateBlog, deleteBlog, getBlogByTitle } = require('../Controllers/blogController');
 const upload = require('../middleware/upload');
 
 // POST /blogs - Create a new blog
@@ -22,6 +22,11 @@ router.put(
   upload.fields([{ name: 'bannerImage', maxCount: 1 }]),
   updateBlog
 );
+
+// Fetch a blog using its title
+router.get('/blog/title/:title', getBlogByTitle);
+
+
 
 // DELETE /blog/:id - Delete a blog
 router.delete('/blog/:id', deleteBlog);

@@ -1,5 +1,16 @@
 const Blog = require('../models/Blog');
 
+
+const generateSlug = (text) => {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '') // remove non-word chars
+    .replace(/\s+/g, '-') // spaces to dashes
+    .replace(/--+/g, '-') // multiple dashes to one
+    .replace(/^-+|-+$/g, ''); // trim dashes
+};
+
 exports.createBlog = async (req, res) => {
   try {
     const { title, metaTitle, metaDescription, description } = req.body;
@@ -8,8 +19,16 @@ exports.createBlog = async (req, res) => {
       return res.status(400).json({ success: false, message: 'All fields are required.' });
     }
 
+    const slug = generateSlug(title);
+
+     const existing = await Blog.findOne({ slug });
+    if (existing) {
+      return res.status(400).json({ success: false, message: 'Slug already exists. Use a different title.' });
+    }
+
     const newBlog = new Blog({
       title,
+      slug,
       // bannerImage: `${req.protocol}://${req.get('host')}/uploads/${req.files.bannerImage[0].filename}`, // Store full URL
       bannerImage: req.files.bannerImage[0].filename,
       metaTitle,
@@ -41,10 +60,12 @@ exports.getBlogs = async (req, res) => {
         }
       : {};
 
-    const blogs = await Blog.find(query)
-      .skip((page - 1) * limit)
-      .limit(parseInt(limit))
-      .select('title bannerImage description createdAt');
+const blogs = await Blog.find(query)
+  .sort({ createdAt: -1 }) 
+  .skip((page - 1) * limit)
+  .limit(parseInt(limit))
+  .select('title bannerImage description createdAt');
+
 
     const totalDocuments = await Blog.countDocuments(query);
     const totalPages = Math.ceil(totalDocuments / limit);
@@ -75,6 +96,29 @@ exports.getBlog = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error.' });
   }
 };
+
+
+// GET /blogs/title/:slugOrTitle - Fetch blog by title
+exports.getBlogByTitle = async (req, res) => {
+  try {
+    let { title } = req.params;
+    // Replace hyphens with spaces
+    title = title.replace(/-/g, ' ');
+    // Query with case-insensitive regex
+    const blog = await Blog.findOne({ 
+      title: { $regex: `^${title}$`, $options: 'i' }
+    }).select('title bannerImage metaTitle metaDescription description createdAt');
+    if (!blog) {
+      console.log(`Blog not found for title: ${title}`);
+      return res.status(404).json({ success: false, message: 'Blog not found.' });
+    }
+    res.status(200).json({ success: true, data: blog });
+  } catch (err) {
+    console.error('Failed to fetch blog by title:', err);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
 
 exports.updateBlog = async (req, res) => {
   try {
