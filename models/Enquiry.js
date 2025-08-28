@@ -24,7 +24,7 @@ const enquirySchema = new mongoose.Schema({
   message: {
     type: String,
     trim: true,
-    minlength: [10, "Message must be at least 10 characters if provided"],
+    // minlength: [10, "Message must be at least 10 characters if provided"],
   },
   referenceFrom: {
     type: String,

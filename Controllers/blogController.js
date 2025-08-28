@@ -11,9 +11,18 @@ const generateSlug = (text) => {
     .replace(/^-+|-+$/g, ''); // trim dashes
 };
 
+const parseMaybeJSON = (input) => {
+  try {
+    return typeof input === 'string' ? JSON.parse(input) : input;
+  } catch (err) {
+    return input; // fallback if parsing fails
+  }
+};
+
+
 exports.createBlog = async (req, res) => {
   try {
-    const { title, metaTitle, metaDescription, description } = req.body;
+    const { title, metaTitle, metaDescription, description, services, faqs } = req.body;
 
     if (!title || !req.files.bannerImage || !metaTitle || !metaDescription || !description) {
       return res.status(400).json({ success: false, message: 'All fields are required.' });
@@ -34,6 +43,8 @@ exports.createBlog = async (req, res) => {
       metaTitle,
       metaDescription,
       description,
+    services: parseMaybeJSON(services),
+  faqs: parseMaybeJSON(faqs),
     });
 
     await newBlog.save();
@@ -123,7 +134,7 @@ exports.getBlogByTitle = async (req, res) => {
 exports.updateBlog = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, metaTitle, metaDescription, description } = req.body;
+    const { title, metaTitle, metaDescription, description,services, faqs } = req.body;
 
     if (!title || !metaTitle || !metaDescription || !description) {
       return res.status(400).json({ success: false, message: 'All fields are required.' });
@@ -134,6 +145,8 @@ exports.updateBlog = async (req, res) => {
       metaTitle,
       metaDescription,
       description,
+         services: parseMaybeJSON(services),
+  faqs: parseMaybeJSON(faqs),
     };
 
     if (req.files && req.files.bannerImage) {

@@ -1,5 +1,6 @@
 const Enquiry = require("../models/Enquiry");
 const asyncHandler = require("express-async-handler");
+const mongoose = require("mongoose");
 
 // Create a new enquiry
 const createEnquiry = asyncHandler(async (req, res) => {
@@ -149,10 +150,28 @@ const getMonthlyBangaloreEnquiryCount = asyncHandler(async (req, res) => {
 });
 
 
+const deleteEnquiry = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: "Invalid enquiry id" });
+    }
+
+  const deleted = await Enquiry.findByIdAndDelete(id);
+  if (!deleted) {
+    return res.status(404).json({ message: "Enquiry not found" });
+  }
+
+  res.status(200).json({ message: "Enquiry deleted", _id: id });
+});
+
+
+
 module.exports = {
   createEnquiry,
   getAllEnquiries,
   countEnquiriesByCity,
   getMonthlyEnquiryCount,
   getMonthlyBangaloreEnquiryCount,
+  deleteEnquiry,
 };
